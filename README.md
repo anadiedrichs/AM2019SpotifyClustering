@@ -68,16 +68,23 @@ Mediante pull request a este repo.
 | [:link:](https://github.com/cienciadedatos/datos-de-miercoles/tree/master/datos/2019/2019-05-15) | Datos de miércoles con Rspotify |
 | [:link:](http://es.r4ds.hadley.nz/) | Traducción (en proceso) al español de "R for Data Science" |
 | [:link:](https://happygitwithr.com/) | Happy Git with R |
+| [:link:](https://r-music.rbind.io/) | Blog del paquete Rspotify |
+| [:link:](https://dplyr.tidyverse.org/) | Dplyr, manipulacion datos, Hoja machete |
+| [:link:](https://purrr.tidyverse.org/) | Purrr, toolkit programación funcional, funciones sobre arreglos/data.frames|
 
 
 # Enlaces extras
 
 | Enlace | Descripción |
 | --- | --- |
-| [:link:](https://r-music.rbind.io/) | Blog del paquete Rspotify |
 | [:link:](http://r4ds.had.co.nz/) | El libro "R for Data Science" en inglés |
-| [:link:](https://dplyr.tidyverse.org/) | Dplyr, manipulacion datos, Hoja machete |
-| [:link:](https://purrr.tidyverse.org/) | Purrr, toolkit programación funcional, funciones sobre arreglos/data.frames|
+| [:link:](https://serialmentor.com/dataviz/) | Libro: Fundamentals of data visualization|
+| [:link:](https://adv-r.hadley.nz/) | Libro: Advanced R |
+| [:link:](https://r-graphics.org/) | Libro: R Graphics Cookbook, 2nd edition |
+| [:link:](https://bookdown.org/csgillespie/efficientR/) | Libro: Efficient R programming |
+
+
+
 
 
 
