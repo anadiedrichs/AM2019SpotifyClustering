@@ -12,7 +12,7 @@ Consignas para el trabajo final de la cátedra Aprendizaje automático UTN Mendo
 
 4 - Orden sobre como trabajar.
 
-* Cree una carpeta con cuyo nombre siga el siguiente formato APELLIDO-NOMBRE-userGitHub , ejemplo PANZA-SANCHO-pancita **WARNING**
+* Cree una carpeta con cuyo nombre siga el siguiente formato nombreDeUsuarioDeGitHub , ejemplo *anadiedrichs*
 * Mueva el script `0-get-data-2.R` a esa carpeta. 
 * Recuerde: creará **todos** sus scripts, notebooks, etc en dicha carpeta.
 
