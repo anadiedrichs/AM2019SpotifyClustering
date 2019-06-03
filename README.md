@@ -30,7 +30,7 @@ Para obtener los datos deberás seguir estos 3 sencillos pasos:
 
 - Instala los paquetes `tidyverse`, `Rspotify` y `httpuv` si no los tienes.
 
-- Corre el código `0-get-data.R`. Dependiendo de tu conexión, tardará en ejecutarse unos 4 minutos.
+- Corre el código `0-get-data-2.R`. Dependiendo de tu conexión, tardará en ejecutarse unos 4 minutos.
 
 # 3- Análisis descriptivo exploratorio
 
