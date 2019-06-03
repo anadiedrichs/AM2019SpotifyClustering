@@ -40,7 +40,7 @@ Para obtener los datos deberás seguir estos 3 sencillos pasos:
 
 * Puede encontrar ejemplos de como realizarlo [en este capítulo de r4ds](https://r4ds.had.co.nz/exploratory-data-analysis.html).
 
-* Debe realizar al menos tres gráficos (por ejemplo usando ggplot2).
+* Debe realizar al menos tres gráficos distintos (por ejemplo usando ggplot2).
 
 ¿Qué se espera de este punto?
 
