@@ -35,13 +35,19 @@ Para obtener los datos deberás seguir estos 3 sencillos pasos:
 
 * Realice un análisis descriptivo exploratorio (EDA en inglés) sobre los datos.
  
-* Use un archivo formato *Rmarkdown* extensión .Rmd
+* Use un archivo formato *Rmarkdown* extensión .Rmd para crear un *notebook* o cuaderno de notas para el análisis de los datos.
 
 * Puede encontrar ejemplos de como realizarlo [en este capítulo de r4ds](https://r4ds.had.co.nz/exploratory-data-analysis.html).
 
-* Debe explicar el significado de las features de las canciones en este apartado.
+* Debe realizar al menos tres gráficos (por ejemplo usando ggplot2).
 
-* Debe realizar al menos tres gráficos con ggplot2.
+¿Qué se espera de este punto?
+
+* Indicar para cada variable su tipo de dato, si presentan valores perdidos.
+* Presentar las variables/features del problema, explicando qué representan, explicar el significado de las features de las canciones en este apartado.
+* Mostrar correlaciones entre variables numéricas (`corplot`)
+* Mostrar la distribución de los valores de las variables (por ejemplo: histograma, diagrama de cajas, densidad)
+* Gráfico de pares de variables o *feature plot* (`pairs`)
 
 **BONUS**: realizar más de tres (3) gráficos con ggplot2.
 
@@ -49,7 +55,7 @@ Para obtener los datos deberás seguir estos 3 sencillos pasos:
 
 Emplee un algoritmo de clustering sobre las *features* de las canciones. 
 
-Justifique las elecciones para su diseño (algoritmo, features a utilizar, creación de nuevas features, pre-procesamiento,etc).
+Explique las elecciones para su diseño en su experimentación (pre-procesamiento, , creación de nuevas features, algoritmo, features a utilizar, etc).
 
 **BONUS**: usar más de un algoritmo de clustering.
 
