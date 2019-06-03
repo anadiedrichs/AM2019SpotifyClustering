@@ -12,9 +12,9 @@ Consignas para el trabajo final de la cátedra Aprendizaje automático UTN Mendo
 
 4 - Orden sobre como trabajar.
 
-* Cree una carpeta con cuyo nombre siga el siguiente formato nombreDeUsuarioDeGitHub , ejemplo *anadiedrichs*
+* Cree una carpeta con cuyo nombre siga el siguiente formato *nombreDeUsuarioDeGitHub* , ejemplo *anadiedrichs*
 * Mueva el script `0-get-data-2.R` a esa carpeta. 
-* Recuerde: creará **todos** sus scripts, notebooks, etc en dicha carpeta.
+*  **Recuerde: creará _todos_ sus scripts, notebooks, etc en dicha carpeta con nombre *nombreDeUsuarioDeGitHub***
 
 # 2- Descarga de datos
 
@@ -25,9 +25,10 @@ Para obtener los datos deberás seguir estos 3 sencillos pasos:
     -   Crea una app con el nombre que quieras. Recuerda este nombre, es el `app-id` que vamos a utilizar luego. Escoge Website entre las opciones y declara que la app NO ES COMERCIAL (en nuestro caso, no lo es).
     -   Copia tu `client ID` y tu `client Secret`.
     -   Haz clic en "Edit settings" y cambia Redirect URLs a <http://localhost:1410/> .
-- Instala los paquetes `tidyverse`, `Rspotify` y `httpuv` si no los tienes (con `install.packages`).
 
 - En el código de `0-get-data.R`, cambia en la línea donde se definen la variable `keys` los valores de `app_id`, `client_id` y `client_secret` por tus datos (línea 17. contando los saltos de línea).
+
+- Instala los paquetes `tidyverse`, `Rspotify` y `httpuv` si no los tienes.
 
 - Corre el código `0-get-data.R`. Dependiendo de tu conexión, tardará en ejecutarse unos 4 minutos.
 
