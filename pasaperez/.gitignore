@@ -1,1 +1,7 @@
 .httr-oauth
+
+*.csv
+
+.RData
+
+.Rhistory
