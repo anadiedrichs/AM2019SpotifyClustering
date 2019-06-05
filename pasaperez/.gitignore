@@ -1,6 +1,6 @@
 .httr-oauth
 
-*.csv
+dataset_spotify.csv
 
 .RData
 
