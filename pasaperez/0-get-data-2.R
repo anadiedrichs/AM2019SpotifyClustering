@@ -13,9 +13,9 @@ library(tidyverse)
 
 ## Conexion spotify
 
-app_id <- 'RspotifyTest' # el nombre que pusiste en la aplicacion
-client_id<- 'asd123' # el client id que figura en la web de spotify
-client_secret <- 'asd123' # el client secret que figura en la web de spotify
+app_id <- 'Clustify' # el nombre que pusiste en la aplicacion
+client_id<- 'd2ebb810e8454966a202ad86ce140548' # el client id que figura en la web de spotify
+client_secret <- '96a44e509d6e41f9a236e1651d4fb450' # el client secret que figura en la web de spotify
 
 keys <- spotifyOAuth(app_id, client_id, client_secret)
 
@@ -189,7 +189,7 @@ top_50_total_es_para_desafio_final <- top_50_total_es_para_desafio %>%
 
 ## Para guardar el resultado:: WARN !
 
-write.csv(top_50_total_es_para_desafio_final,"dataset.csv")
+write.csv(top_50_total_es_para_desafio_final,"dataset2.csv")
 
 # WARN! CUIDADO! no se puede subir a GitHub por tema de condiciones de spotify.
 # por eso se usa la api y el tutorial de la api
