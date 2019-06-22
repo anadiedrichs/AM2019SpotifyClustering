@@ -49,8 +49,8 @@ El DS tiene `r numerovariable` variables (o columnas) y `r numeroobjetorig` ejem
 
 La estructura de las variables es: 
 
-```{r}
-plot_str(dsspotify)
+```{r warning=FALSE}
+estructu<-str(dsspotify); 
 ```
 
 ##Analizando las variables
@@ -76,7 +76,39 @@ columnasprepro2<-c(2,4,7,8,3,9,10,14,15,18,20,12)
 prepros2<-prepros1 %>% select(columnasprepro2)
 ```
 
-Al final de mi preprocesamiento quedan `r numeroobje` filas y `r length(columnasprepro2)`columnas.
+Al final de mi preprocesamiento quedan `r numeroobje` filas y `r length(columnasprepro2)` columnas.
+
+#Variables
+Las columnas son: (`r colnames(prepros2)`)
+ 
+*cancion: indica el nombre de la canción  que aparece en el album.*
+ 
+*artista: indica el artista principal del cual produjo el album.*
+ 
+*puesto: indica del 1 al 50 que puesto esta segun el ranking de cada pais.*
+ 
+*top_pais: indica de que ranking es el puesto y la canción.*
+ 
+*popularidad: indica que tan popular es la cancion en el pais del 1 al 100, es un porcentaje.*
+ 
+*bailabilidad: indica que tan adecuada es una canción para bailar segun el ritmo del 0 al 1.*
+ 
+*energia: indica que tan intenso o activo es una canción, mide el ruido y la rapidez del 0 al 1.*
+ 
+*hablado: indica la presencia de voz en la canción, si es musica-canción-discurso, del 0 al 1.*
+ 
+*acustico: indica que tan acustico es la canción, si contiene o no musica, del 0 al 1.*
+ 
+*positividad: indica la positividad-alegria segun la valencia de la canción del 0 al 1.*
+ 
+*duracion: indica la duración de la canción al reproducirse en ms.*
+ 
+*volumen: indica el volumen promedio de la pista se mide en dB de -60 a 0.*
+
+```{r}
+head(prepros2)
+```
+
 
 ```{r}
 toppaises<-prepros2 %>% select(top_pais) %>% distinct(top_pais)

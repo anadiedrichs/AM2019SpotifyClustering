@@ -374,7 +374,30 @@ variables&lt;-colnames(dsspotify)</code></pre>
 <div id="estructura" class="section level3">
 <h3>Estructura</h3>
 <p>La estructura de las variables es:</p>
-<pre class="r"><code>plot_str(dsspotify)</code></pre>
+<pre class="r"><code>estructu&lt;-str(dsspotify); </code></pre>
+<pre><code>## 'data.frame':    953 obs. of  22 variables:
+##  $ X               : int  1 2 3 4 5 6 7 8 9 10 ...
+##  $ cancion         : Factor w/ 212 levels &quot;¿Quien Tu Eres?&quot;,..: 30 88 8 35 160 167 56 23 207 163 ...
+##  $ popularidad     : int  91 39 87 95 43 90 86 88 41 83 ...
+##  $ artista         : Factor w/ 122 levels &quot;6ix9ine&quot;,&quot;Agus Padilla&quot;,..: 96 86 95 32 58 8 84 93 58 56 ...
+##  $ artista_completo: Factor w/ 183 levels &quot;6ix9ine feat. Anuel Aa&quot;,..: 142 121 139 46 80 10 118 133 79 76 ...
+##  $ album           : Factor w/ 186 levels &quot;÷ (Deluxe)&quot;,&quot;11:11&quot;,..: 29 81 11 35 137 142 49 23 175 141 ...
+##  $ top_pais        : Factor w/ 18 levels &quot;El Top 50 de Argentina&quot;,..: 17 17 17 17 17 17 17 17 17 17 ...
+##  $ puesto          : int  1 2 3 4 5 6 7 8 9 10 ...
+##  $ bailabilidad    : num  0.826 0.694 0.767 0.737 0.678 0.807 0.709 0.816 0.811 0.747 ...
+##  $ energia         : num  0.773 0.581 0.709 0.86 0.717 0.803 0.771 0.754 0.881 0.74 ...
+##  $ nota_musical    : int  11 6 1 8 11 11 7 11 7 4 ...
+##  $ volumen         : num  -4.22 -7.38 -4.47 -2.65 -5.37 ...
+##  $ modo            : int  0 1 1 0 0 1 1 0 0 0 ...
+##  $ hablado         : num  0.0524 0.0496 0.336 0.0593 0.245 0.126 0.166 0.111 0.0405 0.191 ...
+##  $ acustico        : num  0.323 0.843 0.323 0.11 0.202 0.602 0.146 0.0361 0.183 0.0165 ...
+##  $ instrumental    : num  0.00 2.12e-06 0.00 1.94e-06 0.00 8.53e-03 3.29e-06 0.00 1.48e-03 9.94e-05 ...
+##  $ en_vivo         : num  0.143 0.0823 0.0676 0.0574 0.892 0.136 0.249 0.217 0.0651 0.101 ...
+##  $ positividad     : num  0.761 0.664 0.72 0.656 0.654 0.706 0.709 0.533 0.649 0.552 ...
+##  $ tempo           : num  126.9 107.1 172 94 82.2 ...
+##  $ duracion        : int  238200 172722 258639 193227 181084 258800 204453 158400 175800 158800 ...
+##  $ tiempo_compas   : int  4 4 4 4 4 4 4 4 4 4 ...
+##  $ fecha           : Factor w/ 116 levels &quot;1975-11-21&quot;,&quot;1980-06-27&quot;,..: 46 104 57 79 114 75 49 73 89 61 ...</code></pre>
 </div>
 <div id="analizando-las-variables" class="section level2">
 <h2>Analizando las variables</h2>
@@ -399,13 +422,44 @@ variables&lt;-colnames(dsspotify)</code></pre>
 numeroobje&lt;-nrow(prepros1)
 columnasprepro2&lt;-c(2,4,7,8,3,9,10,14,15,18,20,12)
 prepros2&lt;-prepros1 %&gt;% select(columnasprepro2)</code></pre>
-<p>Al final de mi preprocesamiento quedan 900 filas y 12columnas.</p>
+<p>Al final de mi preprocesamiento quedan 900 filas y 12 columnas.</p>
+</div>
+</div>
+<div id="variables" class="section level1">
+<h1>Variables</h1>
+<p>Las columnas son: (cancion, artista, top_pais, puesto, popularidad, bailabilidad, energia, hablado, acustico, positividad, duracion, volumen)</p>
+<p><em>cancion: indica el nombre de la canción que aparece en el album.</em></p>
+<p><em>artista: indica el artista principal del cual produjo el album.</em></p>
+<p><em>puesto: indica del 1 al 50 que puesto esta segun el ranking de cada pais.</em></p>
+<p><em>top_pais: indica de que ranking es el puesto y la canción.</em></p>
+<p><em>popularidad: indica que tan popular es la cancion en el pais del 1 al 100, es un porcentaje.</em></p>
+<p><em>bailabilidad: indica que tan adecuada es una canción para bailar segun el ritmo del 0 al 1.</em></p>
+<p><em>energia: indica que tan intenso o activo es una canción, mide el ruido y la rapidez del 0 al 1.</em></p>
+<p><em>hablado: indica la presencia de voz en la canción, si es musica-canción-discurso, del 0 al 1.</em></p>
+<p><em>acustico: indica que tan acustico es la canción, si contiene o no musica, del 0 al 1.</em></p>
+<p><em>positividad: indica la positividad-alegria segun la valencia de la canción del 0 al 1.</em></p>
+<p><em>duracion: indica la duración de la canción al reproducirse en ms.</em></p>
+<p><em>volumen: indica el volumen promedio de la pista se mide en dB de -60 a 0.</em></p>
+<pre class="r"><code>head(prepros2)</code></pre>
+<pre><code>##         cancion      artista             top_pais puesto popularidad
+## 1 Calma - Remix   Pedro Capó El Top 50 de Uruguay      1          91
+## 2          Hope     Mike Wit El Top 50 de Uruguay      2          39
+## 3    Adan y Eva Paulo Londra El Top 50 de Uruguay      3          87
+## 4     Con Calma Daddy Yankee El Top 50 de Uruguay      4          95
+## 5     Qué pasó?      J.Beren El Top 50 de Uruguay      5          43
+## 6       Secreto     Anuel Aa El Top 50 de Uruguay      6          90
+##   bailabilidad energia hablado acustico positividad duracion volumen
+## 1        0.826   0.773  0.0524    0.323       0.761   238200  -4.218
+## 2        0.694   0.581  0.0496    0.843       0.664   172722  -7.382
+## 3        0.767   0.709  0.3360    0.323       0.720   258639  -4.470
+## 4        0.737   0.860  0.0593    0.110       0.656   193227  -2.652
+## 5        0.678   0.717  0.2450    0.202       0.654   181084  -5.365
+## 6        0.807   0.803  0.1260    0.602       0.706   258800  -4.156</code></pre>
 <pre class="r"><code>toppaises&lt;-prepros2 %&gt;% select(top_pais) %&gt;% distinct(top_pais)
 paises&lt;-substring(as.character(toppaises[1:18,]), 14)
 canciones&lt;-prepros2 %&gt;% select(cancion) %&gt;% distinct(cancion)
 artistas&lt;-prepros2 %&gt;% select(artista) %&gt;% distinct(artista)</code></pre>
 <p>De este DS de Spotify de top 50 de paises hispanohablantes se evaluan: 18 paises, que son: (Uruguay, la Republica Dominicana, Perú, Paraguay, Panamá, Nicaragua, México, Honduras, Guatemala, España, El Salvador, Ecuador, Costa Rica, Colombia, Chile, Bolivia, Argentina, Venezuela). 211 canciones distintas de 121 artistas principales.</p>
-</div>
 <div id="eda-profundo" class="section level2">
 <h2>EDA profundo</h2>
 <div id="section" class="section level3">
