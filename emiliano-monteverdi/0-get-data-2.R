@@ -13,10 +13,10 @@ library(tidyverse)
 
 ## Conexion spotify
 
-app_id <- 'RspotifyTest' # el nombre que pusiste en la aplicacion
-client_id<- 'asd123' # el client id que figura en la web de spotify
-client_secret <- 'asd123' # el client secret que figura en la web de spotify
-
+app_id <- 'MachineLearningEMI' # el nombre que pusiste en la aplicacion
+client_id<- 'aa52c70732af4869aaba652a91c9a4fa' # el client id que figura en la web de spotify
+client_secret <- 'ac882830100847f3a74aebb91eb5f40e' # el client secret que figura en la web de spotify
+1
 keys <- spotifyOAuth(app_id, client_id, client_secret)
 
 ## Obtener las listas de top 50

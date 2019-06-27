@@ -1,0 +1,49 @@
+---
+title: "Clustering - Emiliano Monteverdi"
+author: "Emiliano Monteverdi"
+date: "20/06/2019"
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: no
+  pdf_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+spotify <- read_csv("./dataset.csv")
+```
+
+
+```{r}
+#librerias
+library(factoextra)
+library(ggplot2)
+```
+
+# Clustering
+
+## K-means
+
+Para ciertos datos como el que sigue, k-means no los "agrupa" correctamente.
+```{r}
+spotifyNumerics <- dplyr::select_if(spotify, is.numeric)
+spotifyNumerics <- subset(spotifyNumerics, select = -c(cancion_numero, X1))
+
+df <- spotifyNumerics[,1:2]
+#' dataset original
+plot(df) 
+```
+
+```{r}
+#' kmeans
+set.seed(123)
+km.res <- kmeans(df, 2, nstart = 25)
+
+#' mostrar como quedaron los clusters con la imagen
+fviz_cluster(km.res, df, frame = FALSE, geom = "point")
+```
