@@ -1,0 +1,242 @@
+---
+title: "Explorando dataset de Spotify"
+author: "Martin Ruggeri"
+date: "27 de junio de 2019"
+output: 
+    html_document:
+      collapsed: no
+      smooth_scroll: no
+      toc: yes
+      toc_depth : 5
+      toc_float : yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r include = FALSE}
+
+setwd("C:/Users/Martin/Documents/R/AM2019SpotifyClustering/Martin-Ruggeri")
+
+library(readr)  # esta libreria es para obtener el dataset
+
+top_50_canciones <- read_csv("dataset.csv", col_types = cols(album_fecha = col_date(format = "%Y-%m-%d")), locale = locale(encoding = "ISO-8859-1"))  # guardamos el dataset de Spotify en una varible top_50_canciones
+
+# Cargamos las librerias que usaremos
+library(dplyr)  # esta libreria es para utilizar la operacion '%>%'
+
+library(ggplot2)      # Estas 3 librerias son para graficar
+library(factoextra)
+library(gridExtra)
+
+library(DataExplorer)   # Esta libreria es para analizar el dataset
+```
+
+
+# 1. ANALISIS DE DATOS
+  
+```{r}
+t(introduce(top_50_canciones))
+```
+  Tenemos 702 filas (datos) y 22 columnas (variables), de las cuales:
+  
+  * **6 columnas son valores discretos:** son columnas con valores de etiqueta, que no se pueden realizar graficos o analisis. Ejemplo: cancion_nombre, nombre, cancion_album_id.
+  * **16 columnas con valores continuos:** se pueden analizar, realizar graficos. Ejemplo: feature_energia, feature_fuerza, feature_bailabilidad.
+   
+  Encontramos 1 valores perdidos NA y en total tenemos 15.444 observaciones (o valores).
+
+
+
+## 1.1 Nombre de las varibles
+  Ya sabemos que el dataset de Spotify tiene 22 variables, ahora buscaremos sus nombres
+```{r}
+colnames(top_50_canciones)
+```
+
+
+## 1.2 Eliminamos las variables que no nos seran de utilidad
+ Debido a muchas de las variables no nos serviran para este proyecto, nos desaremos de ellas. Y asi evitamos tener informacion irrelevante o innecesaria.
+```{r}
+top_50_canciones <- top_50_canciones[,-c(1,5,7,11,13,16,17,21,22)]
+```
+Eliminaremos las varibles:
+ 
+ * X1
+ * cancion_artista_completo
+ * cancion_numero
+ * feature_clave
+ * feature_modo
+ * feature_instrumental
+ * feature_en_vivo
+ * feature_tiempo_compas
+ * album_fecha
+
+
+## 1.3 Cambiar nombre
+Cambiamos el nombre de las variables, que nos resulten dificil de comprender, por otros que describa mejor de lo que se refieren dichas variables.
+```{r}
+colnames(top_50_canciones)[8] <- 'feature-volumen'  # cambiamos el nombre de fuerza por volumen
+```
+ 
+Finalmente observaremos como nos quedan las variables del dataset
+```{r}
+colnames(top_50_canciones)
+```
+
+
+
+## 1.4 Distribucion de los datos.
+Una vez que ya sabemos que variables utilizaremos, es necesario ver como estan distribuidos los datos en las distintas variables
+
+```{r}
+plot_histogram(top_50_canciones)
+```
+
+Como podemos ver hay varibles donde la mayoria de los datos se encuentran en un pequeño rango de valores, EJ: cancion_popularidad,feature_bailabilidad, feature_duracion_ms. Y hay otras varibles donde los datos se encuentran mas dispersos, EJ: feature_positividad, feature_acustico.
+
+Viendo el tercer grafico, sobre la acusticidad de las canciones, vemos los valores mas bajos son los mas frecuentes, aunque hay excepciones, por lo que podemos decir de que si queres una cancion en el top 50, ir por una cancion mas acustica, no es una buena idea.
+
+O tambien ir por una con poca hablabilidad (7° Grafico), la mayoria de las canciones en el top 50 tienen poca hablabilidad.
+
+*Nota: solo las variables que son numericas se muestran en estos graficos.*
+
+
+# 2. *GRAFICOS*
+
+## 2.1 Canciones que mas se repiten
+```{r}
+  # Canciones escuchadas en los distintos paices de latino america
+  canciones.repetidas <- top_50_canciones %>%
+                                select(cancion_nombre,cancion_popularidad)  %>%
+                                group_by(cancion_nombre) %>%
+                                tally(name = "total")%>% # suma los valores repetidos del group_by()
+                                arrange(desc(total))
+  
+  barplot(canciones.repetidas$total[1:12],names.arg = canciones.repetidas$cancion_nombre[1:12],las = 2)
+  
+```
+
+
+Vemos que las canciones que mas se repiten (14 veces) son Adan y Eva ; Calma-Remix, es decir que en todos los paises de Latino America se escuchan estas canciones
+
+
+## 2.2 Canciones mas populares
+Con el siguiente grafico observamos un top 10, de las canciones mas papulares
+```{r}
+  
+  # Canciones segun su popularidad
+    canciones.populares <- top_50_canciones %>%
+                                select(cancion_nombre,cancion_popularidad) %>%
+                                group_by(cancion_nombre) %>%
+                                summarize(popularidad = median(cancion_popularidad, na.rm = TRUE)) %>%
+                                arrange(desc(popularidad))
+  
+  barplot(canciones.populares$popularidad[1:10], names.arg = canciones.populares$cancion_nombre[1:10],las = 2)
+
+```
+
+Aca mostramos las canciones mas populares que se escuchan en paises de Latino America, con la mas popular siendo "bad guy".
+
+
+```{r include = FALSE}
+## Bailabilidad por Pais
+  canciones.bailabilidad <- top_50_canciones %>% 
+                                select(pais_nombre, feature_bailabilidad) %>%
+                                group_by(pais_nombre) %>%
+                                summarise(Bailabilidad.Total = mean(feature_bailabilidad, na.rm = TRUE)) %>%
+                                arrange(desc(Bailabilidad.Total))
+  
+  barplot(canciones.bailabilidad$Bailabilidad.Total, names.arg = canciones.bailabilidad$pais_nombre, las = 2, ylim = c(0,0.8), main = "Bailabilidad promedio por pais")
+  
+```
+
+
+## 2.3 Distribucion de los datos entre varibles.
+
+```{r}
+
+pairs(top_50_canciones[,c(2,9,11)],lower.panel = NULL, pch=19) # Comparo Popularidad, que tan hablada es y que tan alegre es
+pairs(top_50_canciones[,c(6,7,8)],lower.panel = NULL, pch=19)  # Comparo Bailabilidad, su intensidad y su volumen
+pairs(top_50_canciones[,c(10,11,12)],lower.panel = NULL, pch=19)
+
+```
+
+
+
+## 2.4 Correlacion entre varibles
+Aca observamos la relacion que hay entre las distintas variables continuas, si en la interseccion de dos variables hay un 1, significa que son directamente proporcionales, si el numero es -1, son inversamente proporcionales. Si es 0 significa que no se relacionan. 
+```{r}
+plot_correlation(top_50_canciones[,c(2,6:13)])
+```
+
+Entre lo mas destacados encontramos volumen y energia, con una relacion de 0.75, significa que si una cancion tiene una energia alta, es muy probable que tenga una volumen tambien alta.
+
+Otro, podria ser acusticidad y energia, que tienen una relacion de -0.42, entonces si queremos tener una cancion energetica, no es muy buena idea hacerla con mucha acustica.
+
+
+## 2.5 Volumen y Energia
+Como vimos que volumen y energia estaban correlacionadas, decidimos hacer un grafico de puntos, con energia en el eje x y volumen en el eje y.
+```{r}
+ggplot(top_50_canciones,aes(x = top_50_canciones$feature_energia, y = top_50_canciones$`feature-volumen`)) + geom_point() + xlab("Energia (Intensidad)") + ylab("Volumen")
+```
+
+Vemos que estan distribuidos en forma diagonal positiva, indicandonos que efectivamente, cuando una feature tiene valor alto, la otra muy probablemente tambien lo sea. 
+
+
+
+# 3. NO SUPERVISADO
+Hemos decidido utilizar estas variables (volumen y energia) para realizar un analisis no supervisado, a travez de Kmeans.
+
+
+## 3.1 Escalar variables 
+
+Antes de poder realizar el metodo de Kmeans debemos Escalar las variables para evitar resultados erroneos, o conclusiones que no son verdaderas.
+
+Vamos a escalar la variable volumen, para que vaya desde el 0 hasta el 1. Para hacer esto tomamos el balor absoluto al valor minimo (-11) como la referencia y divimos a todos los otros valores por ese numero, luego todas quedaran desde el 0  al 1. Luego sumamos 1 para que quere correctamente.
+
+Haciendo esto, el -11 terminara siendo un 0, ya que era nuestra base y es quien tiene la menor fuerza.
+```{r}
+
+top_50_canciones$`feature-volumen` <- top_50_canciones$`feature-volumen` / max(abs(top_50_canciones$`feature-volumen`))
+
+top_50_canciones$`feature-volumen` <- 1 + top_50_canciones$`feature-volumen`
+
+
+```
+
+
+## 3.2 KMEANS
+Una vez que las variables estan en una misma escala pasamos a la realizacion del kmeans.
+
+Para ver la diferencia grafica entre la cantidad de clusters, realizaremos 5 graficos distintos, cada uno con una cantidad distinta de clusters, usamos 2,3,4,6 y 8. 
+
+```{r}
+set.seed(8)
+K.list <- c(2,3,4,6,8)
+kmean <- list()  # esta varible contendra las distintas iteraciones de kmeans en forma de lista
+tw <- c()    # en tw guardamos los resultados de 
+grafico <- list()  # utilizaremos esta varible para luego graficar los distintos kmeans
+comparar <- c('feature_energia','feature-volumen')   # Las variables que vamos a usar del top_50
+
+for ( k in 1:length(K.list)) {
+  kmean <- c(kmean, list(kmeans(top_50_canciones[,comparar],K.list[k])))
+  tw <- c(tw, kmean[[k]]$tot.withinss)  # guarda la suma de los cuadrados de las distancias 
+
+  
+  grafico <- c(grafico , list(fviz_cluster(kmean[[k]], data = top_50_canciones[,comparar], geom = "point" ) + ggtitle(paste("k =",K.list[k], sep = " "))))
+
+   grid.arrange(grafico[[k]])
+}
+
+ grid.arrange(grafico[[1]],grafico[[2]],grafico[[3]],grafico[[4]]) 
+
+ plot(K.list,tw,type="l") # grafica los tot.withinss (suma al cuadrado de las distancias) de las distintas iteraciones
+ 
+```
+
+Vemos que con dos clusters, las que pertenecen al mismo se encuentran muy alejadas unas de otras, no es una muy buena aproximacion. Pero ya con 6 u 8, hay clusters bastante chicos y acurrucados entre otros dos clusters, por lo que las opciones para elegir es 3 o 4.
+
+Finalmente segun el metodo del codo determinamos que lo mejor seria utilizar 4 clusters.
+
