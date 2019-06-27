@@ -13,9 +13,9 @@ library(tidyverse)
 
 ## Conexion spotify
 
-app_id <- 'RspotifyTest' # el nombre que pusiste en la aplicacion
-client_id<- 'asd123' # el client id que figura en la web de spotify
-client_secret <- 'asd123' # el client secret que figura en la web de spotify
+app_id <- 'AM-juampi' # el nombre que pusiste en la aplicacion
+client_id<- '37d7f298218a4184b2509ba22af8a7ef' # el client id que figura en la web de spotify
+client_secret <- '0679ca781943433a808dc2115b8c9574' # el client secret que figura en la web de spotify
 
 keys <- spotifyOAuth(app_id, client_id, client_secret)
 

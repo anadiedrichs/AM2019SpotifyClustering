@@ -1,0 +1,22 @@
+Variable,Clase,Descripcion
+cancion,caracter,Nombre de la canción
+popularidad,numerica,Popularidad en la plataforma
+artista,caracter,Nombre del/la artista
+artista_completo,caracter,Nombre completo del/la artista
+album,caracter,Nombre del álbum
+top_pais,caracter,País del ranking 'El Top 50 de ...'
+puesto,entera,Puesto que ocupa en este ranking
+bailabilidad,numerica,Calidad de bailable (de 0 -> 1)
+energia,numerica,Intensidad y actividad (de 0 -> 1); ej: heavy metal cercano a 1
+tonalidad,factor,Tonalidad: 0 = Do; 1 = C#; 2 = Re y así sucesivamente
+volumen,numerica,Volumen promedio en decibeles
+modo,factor,Modo: Mayor/Menor
+hablado,numerica,Detecta la presencia de palabra hablada (0->1) ej: un podcast tendría puntaje alto
+acustico,numerica,Detecta si es acústica (0->1)
+instrumental,numerica,Instrumental (0->1); más de 0.5 es considerado instrumental
+en_vivo,numerica,Público presente (0->1); ej: un recital debería tener valor cercano a 1
+positividad,numerica,Positividad (0->1) valores cercanos a 1 son alegres; eufóricos; y valores cercanos a 0 son tristes o de ira
+tempo,numerica,Tempo promedio (pulsos/minuto)
+duracion,numerica,Duración en milisegundos
+tiempo_compas,entera,Cantidad de pulsos por compás
+fecha,caracter,Fecha de lanzamiento

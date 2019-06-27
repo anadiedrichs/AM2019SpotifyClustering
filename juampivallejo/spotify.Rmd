@@ -1,0 +1,198 @@
+---
+title: "AM-Spotify"
+author: "Juan Pablo Vallejo"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+  html_notebook:
+    theme: united
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+# Caso Spotify
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(kableExtra)
+library(colorspace) 
+library(DataExplorer)
+library(rtiff)
+```
+
+## Analisis Exploratorio de los Datos
+
+### Columnas
+```{r}
+dataset <- read.csv("dataset.csv",header=TRUE)
+
+colnames(dataset)
+
+```
+
+
+### Descripcion de las variables
+```{r}
+plot_intro(dataset)
+```
+### Variables
+```{r}
+variables <- read.csv("variables.csv",header=TRUE)
+kable( variables[,], caption = 'Variables') %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+
+### Tipos de datos: 
+
+```{r}
+str(dataset)
+```
+### Escalado de Datos
+
+```{r}
+escala <- function(ds){
+  x.max = max(ds)
+  x.min = min(ds)
+  
+  for (i in 1:length(ds)) {
+    ds[i] <- (ds[i] - x.min)/(x.max-x.min)
+  }
+  ds
+}
+```
+
+
+### Gráfico de correlacion entre variables continuas.
+
+
+```{r}
+plot_correlation(distinct(dataset), type="c")
+
+```
+Podemos ver que las features que más se correlacionan son la fuerza y energia, por lo que en general mientras mayor fuerza tiene una canción, mayor va a ser su energía. Luego la feature acustico se correlaciona inversamente con la energía, por lo que a mayor energía menor es su acustica. 
+
+
+### Relacion entre features
+
+```{r}
+bins_pop <- .bincode(dataset$cancion_popularidad , c(0,50,70,80,90,100), TRUE)
+
+#paises <- dataset$pais_nombre
+paises_col <- rev(rainbow_hcl(4))[as.numeric(bins_pop)]
+
+# Plot 
+pairs(dataset %>% select(feature_clave, feature_bailabilidad, feature_energia, feature_fuerza, feature_positividad,
+                          cancion_popularidad ), 
+      col = paises_col,
+      lower.panel = NULL,
+      cex.labels=1, pch=19, cex = 1.2)
+```
+El objetivo de este gráfico es visualizar la relacion entre la popularidad, coloreada con distintos colores, con las distintas features. Lo que se puede observar es que la popularidad es independiente de las demás, ya que muestra valores dispersos.
+
+### cantidad de canciones repetidas por pais
+
+```{r}
+canciones <- levels(dataset[,2])
+paises <- levels(dataset[,8])
+repeated <- matrix(ncol = length(paises), nrow = length(paises))
+rownames(repeated) <- paises
+colnames(repeated) <- paises
+
+for(p in 1:length(paises)){
+  for(p2 in 1:length(paises)){
+    counter <- 0
+    for(i in dataset[dataset[,8]==paises[p],2]){
+      if(i %in%  dataset[dataset[,8]==paises[p2],2]){
+        counter <- counter + 1 
+      }
+    }
+    repeated[p,p2] <- counter
+  }
+}
+
+image(1:ncol(repeated), 1:nrow(repeated), t(repeated), col = terrain.colors(9), axes = FALSE, xlab = "", ylab = "",
+      breaks= c(0,9,19,29,39,49,59,79,89,100)) 
+  axis(1, 1:ncol(repeated), colnames(repeated), las = 2 )
+  axis(2, 1:nrow(repeated), rownames(repeated), las = 1)
+  for (x in 1:ncol(repeated))
+    for (y in 1:nrow(repeated))
+      text(x, y, repeated[y,x])
+
+```
+En este gráfico podemos observar y comparar los gustos musicales entre países, se muestran la cantidad de canciones en común entre los distintos países. Podemos ver que Venezuela y Colombia poseen muchas canciones en común, y en general los paises limítrofes, o con culturas similares, comparten una mayor cantidad de canciones en su top 50.
+
+
+### Histogramas
+```{r}
+data <- dataset %>% t
+plot_histogram(dataset[-c(1,7)]) # 1 y 7 son el indice y numero de canción por lo que no los tenemos en cuenta
+```
+
+### Gráfico de densidad
+```{r}
+plot_density(dataset[-c(1,7)])
+```
+
+## Clustering
+
+```{r}
+  ds.features <- dataset %>% select( feature_bailabilidad, feature_energia,
+                                     feature_fuerza, feature_hablado, feature_positividad,
+                                     feature_acustico)
+  for (i in 1:ncol(ds.features)){
+    ds.features[,i] <- escala(ds.features[,i])
+  }
+
+  ##run k means
+  k.list <- c(2,3,4,5,6,7,8,9,10)
+  i <- 0
+  tw <- vector()  #values of within-cluster sum of square
+
+    for(k in k.list){
+    #######
+      
+    set.seed(42)
+    km <- kmeans(ds.features, k)  
+    tw <- c(tw, km$tot.withinss)
+
+    ########
+  }
+  # plot withinss
+  plot(k.list,tw,type="l", xlab="Cantidad de Clusters", ylab = "total within ss")
+```
+## Analisis con 2 clusters
+
+```{r}
+ncluster <- 4
+km <- kmeans(ds.features, ncluster)
+cluster <- NA 
+for (n in 1:ncluster){
+  cluster[n] <- dataset[km$cluster[] == n, 2]
+  #print("cluster") 
+  #print(cluster[n])
+}
+
+cluster_col <- rev(rainbow_hcl(ncluster))[as.numeric(km$cluster)]
+
+# Plot 
+pairs(ds.features, 
+      col = cluster_col,
+      lower.panel = NULL,
+      cex.labels=1, pch=19, cex = 1.2)
+```
+En este gráfico podemos observar como kmeans divide las canciones en clusters dependiendo de los valores de sus features. Se observa como las divide en canciones de mayor o menor pupularidad, energía, etc. 
+
+
+## Conclusiones y Evaluación de los resultados
+
+El uso de features con mayor correlación entre si, nos permite obtener clusters mas concentrados, es decir, con 
+menor suma interior de cuadrados (total within ss). Esto se debe a que hay una separación mas clara de los datapoints 
+y hay una menor dispersión entre los clusters. 
+En lineas generales los cluster poseen canciones con caracteristicas similares de energía, popularidad, etc. Pero el genero y autores de las canciones en cada cluster es variado. 
+
+
