@@ -39,6 +39,8 @@ colnames(dataset)
 ```{r}
 plot_intro(dataset)
 ```
+
+
 ### Variables
 ```{r}
 variables <- read.csv("variables.csv",header=TRUE)
@@ -52,6 +54,7 @@ kable( variables[,], caption = 'Variables') %>%
 ```{r}
 str(dataset)
 ```
+
 ### Escalado de Datos
 
 ```{r}
@@ -74,6 +77,8 @@ escala <- function(ds){
 plot_correlation(distinct(dataset), type="c")
 
 ```
+
+
 Podemos ver que las features que más se correlacionan son la fuerza y energia, por lo que en general mientras mayor fuerza tiene una canción, mayor va a ser su energía. Luego la feature acustico se correlaciona inversamente con la energía, por lo que a mayor energía menor es su acustica. 
 
 
@@ -92,6 +97,8 @@ pairs(dataset %>% select(feature_clave, feature_bailabilidad, feature_energia, f
       lower.panel = NULL,
       cex.labels=1, pch=19, cex = 1.2)
 ```
+
+
 El objetivo de este gráfico es visualizar la relacion entre la popularidad, coloreada con distintos colores, con las distintas features. Lo que se puede observar es que la popularidad es independiente de las demás, ya que muestra valores dispersos.
 
 ### cantidad de canciones repetidas por pais
@@ -124,6 +131,8 @@ image(1:ncol(repeated), 1:nrow(repeated), t(repeated), col = terrain.colors(9), 
       text(x, y, repeated[y,x])
 
 ```
+
+
 En este gráfico podemos observar y comparar los gustos musicales entre países, se muestran la cantidad de canciones en común entre los distintos países. Podemos ver que Venezuela y Colombia poseen muchas canciones en común, y en general los paises limítrofes, o con culturas similares, comparten una mayor cantidad de canciones en su top 50.
 
 
@@ -133,10 +142,12 @@ data <- dataset %>% t
 plot_histogram(dataset[-c(1,7)]) # 1 y 7 son el indice y numero de canción por lo que no los tenemos en cuenta
 ```
 
+
 ### Gráfico de densidad
 ```{r}
 plot_density(dataset[-c(1,7)])
 ```
+
 
 ## Clustering
 
@@ -165,6 +176,7 @@ plot_density(dataset[-c(1,7)])
   # plot withinss
   plot(k.list,tw,type="l", xlab="Cantidad de Clusters", ylab = "total within ss")
 ```
+
 ## Analisis con 2 clusters
 
 ```{r}
@@ -185,6 +197,8 @@ pairs(ds.features,
       lower.panel = NULL,
       cex.labels=1, pch=19, cex = 1.2)
 ```
+
+
 En este gráfico podemos observar como kmeans divide las canciones en clusters dependiendo de los valores de sus features. Se observa como las divide en canciones de mayor o menor pupularidad, energía, etc. 
 
 
