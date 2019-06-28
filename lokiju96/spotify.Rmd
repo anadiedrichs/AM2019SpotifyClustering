@@ -1,0 +1,226 @@
+---
+title: "EDA y Clustering sobre dataset de Spotify"
+author: "Agustin Miñan Valero"
+output: html_document
+---
+
+## Spotify
+
+```{r setup, include=FALSE}
+library(DataExplorer)
+library(dplyr)
+library(ggplot2)
+library(factoextra)
+knitr::opts_chunk$set(echo = TRUE)
+csv <- read.csv("dataset.csv")
+csv <- csv[1:903,]
+csv <- csv[-51,]
+csv <- csv[-51,]
+csv <- csv[-203,]
+csv[,20] <- csv[,20] / 1000
+colnames(csv)[20] <- "feature_duracion"
+```
+
+Aclaracion sobre preprocesamiento:
+
+* Se ajustan los rankings para que hayan 50 canciones por pais.
+* Se eliminan los repetidos en Venezuela
+* Se ajusta la feature duracion para que esté en segundos
+
+El dataset de spotify tiene 22 variables para 900 canciones, las cuales estan divididas en 18 paises, con un top 50 de cada uno:
+
+Las variables son: 
+
+`r colnames(csv)[-1]`
+
+
+# Resumen de datos
+
+```{r}
+plot_intro(csv)
+```
+
+Como se puede observar, no tenemos filas incompletas ni observaciones faltantes, lo que facilita el procesamiento de datos ya que no hay que lidiar con datos faltantes
+
+# Variables
+
+Sólo se detallan las que no se describen con su nombre:
+
+cancion_popularidad: Popularidad medida en Spotify
+
+cancion_numero: Orden de la cancion en el ranking
+
+pais_nombre: País del ranking
+
+feature_clave: Es la nota musical
+
+feature_fuerza: Es el volumen promedio de una cancion
+
+feature_modo: Indica el tono (mayor o menor) sobre la nota musical de una cancion 
+
+Las variables feature_bailabilidad, feature_energia, feature_positividad son generadas por spotify y no sabe con exactitud como son calculadas
+
+
+# Paises
+
+Listado de países ordenados alfabeticamente
+
+```{r}
+unique(csv$pais_nombre)[order(unique(csv$pais_nombre))]
+```
+
+# Canciones
+
+Listado de canciones ordenadas alfabeticamente
+
+```{r}
+unique(csv$cancion_nombre)[order(unique(csv$cancion_nombre))]
+```
+
+# Artistas 
+
+Listado de artistas principales ordenados alfabeticamente
+
+```{r}
+unique(csv$cancion_artista)[order(unique(csv$cancion_artista))]
+```
+
+# Correlacion entre variables
+
+```{r}
+csv_cancionesunicas <- csv %>% distinct(cancion_nombre, .keep_all = TRUE)
+plot_correlation(csv_cancionesunicas[-1], type="c")
+```
+
+En el gráfico se puede observar lo siguiente:
+
+* **Fuerza** (Volumen) y **Energia** estan altamente relacionadas (0.72)
+* **Fuerza** y **Positividad** estan relacionadas (0.41)
+* **Energia** y **Positividad** estan relacionadas (0.33)
+* **Bailabilidad** y **Popularidad** estan relacionadas (0.32)
+
+* **Acustico** y **Energia** estan inversamente relacionadas (-0.36)
+* **Modo** y **Clave** estan inversamente relacionadas (-0.33)
+* **Acustico** y **Fuerza** estan inversamente relacionadas (-0.28)
+* **Tempo** y **Bailabilidad** estan inversamente relacionadas (-0.27)
+
+## Correlaciones particulares
+
+Vistas las relaciones dadas en el grafico anterior, procedo a mostrar graficamente los pares de valores relacionados
+
+### Relacionadas
+
+#### Fuerza y energia
+
+```{r}
+ggplot(data = csv_cancionesunicas) + geom_bin2d(mapping = aes(x = feature_fuerza, y = feature_energia))
+```
+
+#### Fuerza y positividad
+
+```{r}
+ggplot(data = csv_cancionesunicas) + geom_bin2d(mapping = aes(x = feature_fuerza, y = feature_positividad))
+```
+
+#### Energia y positividad
+
+```{r}
+ggplot(data = csv_cancionesunicas) + geom_bin2d(mapping = aes(x = feature_energia, y = feature_positividad))
+```
+
+#### Bailabilidad y Popularidad
+
+```{r}
+ggplot(data = csv_cancionesunicas) + geom_bin2d(mapping = aes(x = feature_bailabilidad, y = cancion_popularidad))
+```
+
+### Inversamente relacionadas
+
+#### Acustico y energia
+
+```{r}
+ggplot(data = csv_cancionesunicas) + geom_bin2d(mapping = aes(x = feature_acustico, y = feature_energia))
+```
+
+#### Acustico y Fuerza
+
+```{r}
+ggplot(data = csv_cancionesunicas) + geom_bin2d(mapping = aes(x = feature_acustico, y = feature_fuerza))
+```
+
+#### Tempo y Bailabilidad
+
+```{r}
+ggplot(data = csv_cancionesunicas) + geom_bin2d(mapping = aes(x = feature_tempo, y = feature_bailabilidad))
+```
+
+## Anexo: Relacion entre duracion y popularidad
+
+```{r}
+ggplot(data = csv_cancionesunicas) + geom_bin2d(mapping = aes(x = feature_duracion, y = cancion_popularidad))
+```
+
+# Distribucion de los valores
+
+Solamente de los valores numericos
+
+```{r}
+csv_numerico <- csv_cancionesunicas[,-c(1,2,4,5,6,7,8,22)]
+summary(csv_numerico)
+```
+
+```{r}
+plot_boxplot(csv_numerico, by="feature_bailabilidad")
+```
+
+```{r}
+plot_histogram(csv_numerico,ggtheme=theme_classic())
+```
+
+# Clustering
+
+Se hara una separacion en clusters a las variables bailabilidad y popularidad, para poder separar a las canciones en estos grupos
+
+```{r}
+escala <- function(ds){
+  x.max = max(ds[,1])
+  x.min = min(ds[,1])
+  y.max = max(ds[,2])
+  y.min = min(ds[,2])
+  
+  for (i in 1:nrow(ds)) {
+    ds[i,1] <- (ds[i,1] - x.min)/(x.max-x.min)
+    ds[i,2] <- (ds[i,2] - y.min)/(y.max-y.min)
+  }
+  ds
+}
+csv_cluster <- csv_cancionesunicas[,c("cancion_nombre","feature_bailabilidad","cancion_popularidad")]
+csv_cluster[,2:3] <- escala(csv_cluster[,2:3])
+plot(csv_cluster[,-1])
+```
+
+```{r}
+set.seed(2111)
+km <- kmeans(csv_cluster[,-1], 3)
+fviz_cluster(km, csv_cluster[,-1], geom = "point")
+csv_cluster[,4] <- km$cluster
+colnames(csv_cluster)[4] <- "cluster"
+```
+
+## Cluster 1: Popular no tan bailable
+
+```{r}
+csv_cluster[csv_cluster$cluster == 1,][1]
+```
+
+## Cluster 2: Popular y Bailable
+
+```{r}
+csv_cluster[csv_cluster$cluster == 2,][1]
+```
+
+## Cluster 3: Poco popular
+
+```{r}
+csv_cluster[csv_cluster$cluster == 3,][1]
+```
