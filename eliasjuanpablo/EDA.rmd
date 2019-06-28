@@ -1,0 +1,86 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+# Exploración de datos - Top 50 canciones (Spotify)
+
+### Utilizamos el dataset obtenido mediante el script 0-get-data.R
+```{r}
+library(ggplot2)
+library(colorspace)
+library(DataExplorer)
+library(tidyverse)
+data <- read.csv('dataset_spotify.csv')
+summary(data)
+```
+
+## Chequeamos valores faltantes
+```{r}
+sum(is.na(data))
+```
+
+## Analizamos _popularidad_ respecto de _bailabilidad_ en Argentina
+
+```{r}
+ggplot(data = subset(data, top_pais='El Top 50 de Argentina')) +
+  geom_point(mapping = aes(x=bailabilidad, y=popularidad))
+```
+
+
+**Conclusión**: Observamos que generalmente las canciones populares son bailables, aunque existen outliers que no cumplen esto.
+
+---
+
+### Variedad y uso de las tonalidades: ¿Cuáles son las más utilizadas?
+
+```{r}
+ggplot(data = data[!duplicated(data$cancion),]) +
+  geom_bar(mapping = aes(x = nota_musical))
+```
+
+**Conclusión**: según la API (y para sorpresa mía) existe una variada utilización de las tonalidades (salvo por Re#/Mib que aparentemente es la menos popular)
+
+---
+
+### Correlación. ¿Cuál es la clave del éxito?
+  
+Analizaremos la correlación entre las features.
+```{r}
+plot_correlation(data, type="c")
+```
+
+
+**Conclusiones**: no observamos valores altos de correlación salvo entre _volumen_ y _energía_. Otras features aparentemente relacionadas son _positividad_ con _energía_ y _volumen_, _tempo_ con _hablado_, y _popularidad_ con _bailabilidad_ (algo que aproximadamente se mostró en el scatter plot anterior).
+Resulta interesante que ninguna feature presenta correlación alta con _popularidad_ o _puesto_. Aparentemente no existe la clave del éxito.
+
+---
+### Clustering
+
+Se utilizará clustering para agrupar canciones con características similares.
+
+#### k-means
+
+```{r}
+features <- data %>%
+  select(bailabilidad, energia, volumen, hablado, positividad, acustico)
+
+ncluster <- 4
+km <- kmeans(features, ncluster)
+# cluster <- NA 
+# for (n in 1:ncluster){
+#   cluster[n] <- data[km$cluster[] == n, 'cancion']
+# }
+
+cluster_col <- rainbow_hcl(4)[km$cluster]
+
+# Plot 
+pairs(features, 
+      col = cluster_col,
+      lower.panel = NULL,
+      cex.labels=1, pch=19, cex = 1.2)
+```
+
+## Conclusiones
+
+En este laboratorio se utilizaron técnicas de exploración de los datos, con las cuales se observó la relación entre ellos y se aplicó el algoritmo de clustering _kmeans_ para obtener posibles agrupaciones de los mismos.
