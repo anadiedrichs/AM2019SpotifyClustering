@@ -1,0 +1,151 @@
+---
+title: "GlobalRMD"
+author: "Nicolas VIdela"
+date: "13 de junio de 2019"
+output:
+  html_document:
+    collapsed: no
+    smooth_scroll : no
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+---
+
+#Primero cargamos el dataset
+```{r}
+load("~/AM2019SpotifyClustering/nicolasvidelac/dataset.RData")
+```
+
+
+#3. Analisis de datos
+```{r}
+library(DataExplorer)
+introduce(top_50_canciones)
+```
+  Tenemos 902 filas (datos) y 17 columnas, de las cuales:
+  . 6 columnas con valores discretos: son columnas con valores de etiqueta, que no se pueden realizar graficos o analisis. Ejemplo: cancion_nombre, nombre, cancion_id, cancion_album_id.
+  . 15 columnas con valores continuos: se pueden analizar, realizar graficos. Ejemplo: feature_energia, feature_fuerza, feature_bailabilidad.
+  ENcontramos 0 valores perdidos y en total tenemos 15.334 observaciones (o valores).
+  
+```{r}
+library(DataExplorer)
+plot_histogram(top_50_canciones[,10:17])
+```
+Los graficos muestran las frecuencias de los distintos valores, por ejemplo:
+Viendo el primer grafico, sobre la acusticidad de las canciones, vemos los valores mas bajos son los mas frecuentes, aunque hay excepciones, por lo que podemos decir de que si queres una cancion en el top 50, ir por una cancion mas acustica, no es una buena idea.
+
+O tambien ir por una con poca hablabilidad, la mayoria de las canciones en el top 50 tienen poca hablabilidad.
+
+```{r}
+plot_correlation(top_50_canciones[,10:17])
+```
+Aca observamos la relacion que hay entre las distintas variables continuas, si en la interseccion de dos variables hay un 1, significa que son directamente proporcionales, si el numero es -1, son inversamente proporcionales.
+
+Entre lo mas destacados encontramos fuerza y energia, con una relacion de 0.74, significa que si una cancion tiene una energia alta, es muy probable que tenga una fuerza tambien alta.
+
+Otro, podria ser acusticidad y energia, que tienen una relacion de -0.4, entonces si queremos tener una cancion energetica, no es muy buena idea hacerla con mucha acustica.
+
+
+```{r}
+plot(top_50_canciones[,c(11,12)], pch=19)
+```
+COmo vimos que fuerza y energia estaban correlacionadas, decidimos hacer un grafico de puntos, con una feature en el eje x y otra en el eje y. Y vemos que estan distribuidos en forma diagonal positiva, indicandonos que efectivamente, cuando una feature tiene valor alto, la otra muy probablemente tambien lo sea. 
+
+Plot que realizamos
+```{r}
+
+  library(dplyr)
+  canciones.repetidas <- top_50_canciones %>%  
+        select(cancion_nombre,cancion_popularidad)  %>% 
+        group_by(cancion_nombre) %>%   
+        tally(name = "total")  # suma los valores repetidos del group_by() 
+  
+  barplot(canciones.repetidas$total[1:10],names.arg = canciones.repetidas$cancion_nombre[1:10],las = 2, ylim = c(0,20), main = "Canciones repetidas entre paises")
+
+```
+En este grafico observamos en cuantos paises distintos se encuentran algunas canciones, por ejemplo, Adam y eva es entre las canciones mas escuchadas en mas de 15 paises distintos, y otras como 22, en 1 o 2 paises.
+
+
+Canciones mas populares en Latinoamerica
+```{r}
+canciones.cluster <- top_50_canciones %>% select(cancion_nombre, cancion_popularidad) %>% group_by(cancion_nombre) %>% summarise(popularidad = mean(cancion_popularidad, na.rm = TRUE)) %>% arrange(desc(popularidad))
+  barplot(canciones.cluster$popularidad[1:10], names.arg = canciones.cluster$cancion_nombre[1:10], las = 2, ylim = c(0,100), main = "Canciones mas populares")
+
+```
+Aca mostramos las canciones mas populares que se escuchan en paises de habla hispana, con la mas popular siendo "bad guy".
+
+Bailabilidad y acusticidad promedio por pais
+```{r}
+canciones.3 <- top_50_canciones %>% select(pais_nombre, feature_bailabilidad) %>% group_by(pais_nombre) %>% summarise(Bailabilidad.Total = mean(feature_bailabilidad, na.rm = TRUE)) %>% arrange(desc(Bailabilidad.Total))
+  barplot(canciones.3$Bailabilidad.Total, names.arg = canciones.3$pais_nombre, las = 2, ylim = c(0,0.8), main = "Bailabilidad promedio por pais")  
+  
+canciones.4 <- top_50_canciones %>% select(pais_nombre, feature_acusticidad) %>% group_by(pais_nombre) %>% summarise(Acusticidad.Total = mean(feature_acusticidad, na.rm = TRUE)) %>% arrange(desc(Acusticidad.Total))
+  barplot(canciones.4$Acusticidad.Total, names.arg = canciones.4$pais_nombre, las = 2, ylim = c(0,0.8), main = "Acusticidad promedio por pais") 
+
+```
+En este toma el promedio del top 50 de cada pais de dos features distintos, en el primer grafico, tomamos la bailabilidad, y en el segundo, la acusticidad.
+Podemos ver que el maximo en ambos casos es Republica Dominicana, y el minimo Colombia, pero el resto de los paises cambian de lugar.
+Tambien podemos concluir que los temas mas exitosos, son normalmente muy bailables, y poco acusticos.
+
+
+4. COmo ya vimos que las columnas fuerza y energia estan bastante correlacionadas. Experimentaremos  tienendo en cuenta estas dos features.
+
+Primero, escalamos la variable fuerza, para que vaya desde el 0 hasta el 1. Para hacer esto tomamos al valor minimo (-11) como la referencia y divimos a todos los otros valores por ese numero, luego todas quedaran desde el -1 al 0, y les sumamos +1 para que quere correctamente.
+Haciendo esto, el -11 terminara siendo un 0, ya que era nuestra base y es quien tiene la menor fuerza.
+
+```{r}
+top_50_canciones2 <- top_50_canciones
+top_50_canciones2$feature_fuerza <- top_50_canciones2$feature_fuerza / max(abs(top_50_canciones2$feature_fuerza)) + 1
+```
+
+Luego utilizamos el algoritmo kmeans y lo que hacemos es determinar la cantidad de clusters a utilizar. Por el metodo del codo, determinamos que lo mejor seria utilizar 4 clusters.
+
+```{r}
+  library(dplyr)
+  canciones.cluster <- unique(top_50_canciones2 %>% select(feature_energia, feature_fuerza) )
+
+  k.list <- c(2,4,6,8)
+  i <- list()
+  tw <- c()
+
+  for (k in 1:length(k.list)) {
+    i <- c(i,list(kmeans(canciones.cluster,k.list[k])))
+    tw <- c(tw,i[[k]]$tot.withinss)
+  }
+  
+  plot(k.list,tw,type="l")
+  
+  
+```
+
+Igualmente para ver la diferencia grafica entre la cantidad de clusters, realizaremos 4 graficos distintos, cada uno con una cantidad distinta de clusters, usamos 2,4,6 y 8. 
+
+```{r}
+  library(factoextra)
+  library(ggplot2)
+  library(gridExtra)
+
+  kmean2 <- kmeans(top_50_canciones2[,c(11,12)],2)
+  kmean4 <- kmeans(top_50_canciones2[,c(11,12)],4)
+  kmean6 <- kmeans(top_50_canciones2[,c(11,12)],6)
+  kmean8 <- kmeans(top_50_canciones2[,c(11,12)],8)
+  
+  p2 <- fviz_cluster(kmean2, data = top_50_canciones2[,c(11,12)], geom = "point" ) + ggtitle("k = 2")
+  p4 <- fviz_cluster(kmean4, data = top_50_canciones2[,c(11,12)], geom = "point" ) + ggtitle("k = 4")
+  p6 <- fviz_cluster(kmean6, data = top_50_canciones2[,c(11,12)], geom = "point" ) + ggtitle("k = 6")
+  p8 <- fviz_cluster(kmean8, data = top_50_canciones2[,c(11,12)], geom = "point" ) + ggtitle("k = 8")
+  
+  plot(p2)
+  plot(p4)
+  plot(p6)
+  plot(p8)
+
+```
+
+Vemos que con dos clusters, las que pertenecen al mismo se encuentran muy alejadas unas de otras, no es una muy buena aproximacion. Pero ya con 6 u 8, hay clusters bastante chicos y acurrucados entre otros dos clusters, por lo que la opcion de elegir 4, tiene sentido.  
+
+
+
+5. Conclusiones generales
+  
+  
