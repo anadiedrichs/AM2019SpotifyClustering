@@ -1,0 +1,223 @@
+---
+title: "Clustering"
+author: "Angel Santiago Perez 40023-40448"
+date: "27 de junio de 2019"
+output:
+  html_document:
+    collapsed: no
+    smooth_scroll: no
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Punto 4
+Importo bibliotecas y cargo el dataset prepreprocesado.
+
+```{r message=FALSE, warning=FALSE}
+library(clustertend)
+library(dbscan)
+library(factoextra)
+library("plot3Drgl")
+library("plot3D")
+library("fpc")
+library("GGally")
+library(ggplot2)
+library(tidyverse)
+library(gapminder)
+library(DataExplorer)
+
+set.seed(40023)
+ds1<-read.csv("./dspreprocesado.csv") %>% select(2:13)
+ds<-ds1
+```
+
+
+##Preprocesamiento
+En este apartado se transforma todo el dataset a numerico (incluso las canciones y artistas) y se escala entre 0 y 1. Al final se escala entre -1 y 1 centrado en 0. Ya que la clusterizaión para que  los algoritmos sean efectivos tiene que estar normalizado asi, con mediana en 0.
+
+```{r}
+rge <- apply(ds1[,c(10,12)],2,min)
+ds[,c(10,12)] <- sweep(ds1[,c(10,12)],2, rge, FUN="/")
+ds[,10]<-ds1[,10]
+rge2 <- apply(ds1[,c(4,5,11)],2,max)
+ds[,c(4,5,11)] <- sweep(ds1[,c(4,5,11)],2, rge2, FUN="/")
+x1<-array(dim = c(900,3))
+x1[,1]<-as.integer(ds[,1])
+x1[,2]<-as.integer(ds[,2])
+x1[,3]<-as.integer(ds[,3])
+rge3<-apply(x1,2,max)
+ds[,c(1:3)] <- sweep(x1,2, rge3, FUN="/")
+ds2<-ds
+ds<-scale(ds, center = TRUE, scale = TRUE)
+```
+
+##K-Means
+Algoritmo de K-means estandar, para probar cantidad de clusters. Hago pruebas desde 1 hasta 200 clusters en k. Y realizo grafico de la variación entre suma de cuadrados totales, para realizar la tecnica del codo.
+
+```{r}
+for (ver in c(200, 100, 50, 25, 13)) 
+{
+  k.list <- c(1:ver)
+  tw<- NULL
+  tw <- vector()
+  tw<- c(tw, 0)
+  for(k in k.list)
+  {
+    km<-kmeans(x=ds, centers = k, iter.max = 128)
+    tw<-c(tw, km$tot.withinss)
+  }
+  plot(c(0,k.list),tw,type="b")
+}
+```
+
+Aqui haciendo zoom en el grafico intento buscar un punto optimo, aunque lo maximo que puedo analizar para K-Means es que pueden haber grupos de entre 1 y 20 clusters.
+
+Por lo que utilizare otra medida un poco mas precisa para ver la cantidad optima de clusters. (La suma de la diferencia de los cuadrados entre clusters)/(La suma total de la diferencia de los cuadrados).
+
+```{r}
+k<-NULL
+k<-list()
+betw<-NULL
+betw<-list()
+for (kme in 1:20)
+{
+  k[[kme]]<-kmeans(ds, centers = kme, iter.max = 128)
+  betw[[kme]]<-k[[kme]]$betweenss/(k[[kme]]$totss)
+}
+plot(1:20, betw, type = "b")
+```
+
+Aqui puedo analizar que la relación optima puede estar entre los 1 y 15 clusters.
+
+
+```{r}
+k<-NULL
+k<-list()
+betw<-NULL
+betw<-list()
+for (kme in 1:15) 
+{
+  k[[kme]]<-kmeans(ds, centers = kme, iter.max = 128)
+  betw[[kme]]<-k[[kme]]$betweenss/(k[[kme]]$totss)
+}
+plot(1:15, betw, type = "p")
+```
+
+Aqui lo que mejor puedo evaluar es que los clusters simples son entre los 4, 5, 6, 7, 11, 12 y 13, dependiendo de la aleatoriedad.
+
+```{r}
+clusterskmens<-c(4, 5, 6, 7, 11, 12, 13)
+for (cant in clusterskmens) 
+{
+  km2<-kmeans(ds, centers = cant, iter.max = 128)
+  plot(1:900, km2$cluster)
+}
+
+```
+
+En estos graficos puedo ver que en k= 6, 12 y 13, k-means clasifica algunos ejemplos automaticamente como ruido, por lo que descarto estas cantidades.
+
+```{r}
+km3<-kmeans(ds, centers = 4, iter.max = 128)
+fviz_cluster(km3, ds)
+km3<-kmeans(ds, centers = 5, iter.max = 128)
+fviz_cluster(km3, ds)
+km3<-kmeans(ds, centers = 7, iter.max = 128)
+fviz_cluster(km3, ds)
+km3<-kmeans(ds, centers = 11, iter.max = 128)
+fviz_cluster(km3, ds)
+```
+
+Visualmente lo que puede separar mejor es un k=4, pero eso es subjetivo, y se tiene que analizar mejor.
+
+##PAM K-Medoid
+En el algoritmo de clusterización los resultados para el dataset fueron de k= 6, 7, 12 y 13.
+La diferencia con K-means es que en vez de usar la mediana usa la media para calcular los clusters.
+
+```{r}
+p<-NULL
+p<-vector()
+p<-c(p,0)
+for (n_clusters in 1:20) 
+{
+  p1<-cluster::pam(x = ds, k = n_clusters, metric = "manhattan")
+  p<-c(p, p1$objective["swap"])
+}
+plot(0:20,p)
+
+```
+
+Los mejores valores para cantidad de clusters serian k=3,4
+
+```{r}
+p<-NULL
+p<-vector()
+p<-c(p,0)
+
+p1<-cluster::pam(x = ds, k = 3, metric = "manhattan")
+p2<-cluster::pam(x = ds, k = 4, metric = "manhattan")
+
+plot(1:900,p1$clustering)
+plot(1:900,p2$clustering)
+```
+
+##Cluster K-Means Jerarquico
+Este algoritmo clasifica a todos los objetos en un grupo, calcula un centro, luego separa a los mas lejanos y calcula nuevamente un 2 centroides, y asi sucesivamente hasta que haya un cluster por objeto. Se selecciona un valor optimo del arbol del dendograma en el que haya una cantidad de ramas (clusters) diferenciable. 
+
+```{r}
+hc_euclidea_completo <- hclust(d = dist(x = ds, method = "euclidean"),
+                               method = "complete")
+fviz_dend(x = hc_euclidea_completo, cex = 0.5, main = "Linkage completo",
+          sub = "Distancia euclídea")
+
+```
+
+Utilizaremos un k=5.
+
+```{r}
+hcluster<-cutree(hc_euclidea_completo, k=5)
+plot(1:900, hcluster)
+hkmeans_cluster <- hkmeans(x = ds, hc.metric = "euclidean", hc.method = "complete", k = 5)
+fviz_cluster(object = hkmeans_cluster)
+```
+
+##DBSCAN
+Este algoritmo se basa en un epsilon para agrupar objetos alrededor de este epsilon, con condicion de puntos minimos por clusters, cuando un objeto esta fuera del epsilon se hace otro cluster, si se queda un solo objeto por cluster este objeto se clasifica como outlayer.
+
+Lo primero que hago es obtener un epsilon optimo entre 1 y 10, para el dataset original. Y luego calculo los clasters, con resultado de K=2.
+
+```{r}
+clus<-NULL
+clus<-vector()
+for (punt in 1:10) 
+{
+  dbscan::kNNdistplot(ds, k = punt)
+}
+#eps entre 2 y 4
+for (punt in 0:10) 
+{
+  datasca<-fpc::dbscan(ds, eps = 3, MinPts = punt, showplot = 0)
+  clus<-c(clus,max(datasca$cluster))
+}
+
+plot(0:10, clus)
+
+fviz_cluster(object = datasca, data = ds, )
+```
+
+#Clusterizable
+En este apartado utilizo dos medidas para ver si es clusterizable mi dataset. El metodo de las cajas de distancias y el Metodo Hopkins.
+En ambas metricas me devuelven que el dataset es altamente clusterizable con este conjunto de datos.
+
+```{r}
+fviz_pca_ind(X = prcomp(ds), geom = "point", title = "PCA - ds", pallete = "jco")
+H<-hopkins(data = ds, n = nrow(ds)-1)
+fviz_dist(dist.obj = dist(ds, method = "euclidean"), show_labels = FALSE) +
+  labs(title = "Datos iris") + theme(legend.position = "bottom")
+H
+```
