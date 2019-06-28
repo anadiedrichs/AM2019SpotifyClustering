@@ -12,11 +12,11 @@
 library(Rspotify)
 library(tidyverse)
 
-# app_id es el nombre de la aplicación que creaste
+# app_id es el nombre de la apylicación que creaste
 # client_id y client_secret, son keys de la api de spotify
-app_id <- 'RspotifyTest' # el nombre que pusiste en la aplicacion
-client_id<- 'asd123' # el client id que figura en la web de spotify
-client_secret <- 'asd123' # el client secret que figura en la web de spotify
+app_id <- 'appspot' # el nombre que pusiste en la aplicacion
+client_id<- '82855c5e46bc4807958f062d0355fb95' # el client id que figura en la web de spotify
+client_secret <- 'cbf43565e92a4ae4bef55c06e55ae153' # el client secret que figura en la web de spotify
 
 keys <- spotifyOAuth(app_id, client_id, client_secret)
 
