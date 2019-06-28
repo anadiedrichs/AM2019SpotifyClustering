@@ -1,0 +1,215 @@
+---
+title: "Analisis Descriptivo Exploratorio"
+author: "Emiliano Monteverdi"
+date: "20/06/2019"
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: no
+  pdf_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(ggplot2)
+library(MASS)
+library("GGally")
+library("dplyr")
+library(DataExplorer)
+library(gapminder)
+suppressMessages(library(tidyverse))
+spotify <- read_csv("./dataset.csv")
+```
+
+### Spotify
+
+El dataset *spotify* tiene `r ncol(spotify)` variables y `r nrow(spotify)` observaciones.
+Las otras variables son: `r colnames(spotify)[-5]`
+
+## Resumen del contenido del dataset
+
+### Analiticamente
+Aqui se puede apreciar, de manera simplificada, lo que el dataset contiene.
+```{r}
+t(introduce(spotify))
+```
+
+### Graficamente
+En este caso podemos ver, mediante un grafico de barras, la representacion de los datos anteriores.
+```{r}
+plot_intro(spotify)
+```
+
+## Tipos de datos de las variables
+
+```{r}
+str(spotify)
+```
+
+### Explicacion de las variables
+Las variables vistas anteriormente, en su mayoria, son muy descriptivas de por si. Por lo tanto, explicare aquellas que no supe comprender en un principio:
+
+feature_clave = es la nota musical (do, re, mi, fa, so, la, si).
+
+feature_fuerza = es el volumen promedio de una cancion en (dB).
+
+feature_energia = las canciones energeticas son rapidas, fuertes y ruidosas.
+
+feature_modo = indica la modalidad (mayor o menor) de una cancion.
+
+feature_acustico = indica cuan acustica es la cancion, es decir, a mayor valor de la variable, mas predominancia de instrumentos acusticos posee (guitarra, violin, flauta, etc). Rango de valores (0.0 -> 1.0).
+
+feature_instrumental = indica cuan instrumental es la cancion, es decir, a mayor valor de la variable, mas intrumentos predominan y menos palabras habladas presenta. Rango de valores (0.0 -> 1.0)
+
+feature_en_vivo = indica cuanta gente en vivo esta presente en la cancion, es decir, si la variable presentara su valor maximo, se podria decir que la cancion se grabo en vivo con un publico y, en el caso opuesto, utilizando el minimo valor, se podria decir que se grabo en un estudio de grabacion.
+
+feature_tempo = indica el promedio estimado del tempo de una cancion en BPM (Beats Per Minute). El tempo es la velocidad con la que se ejecuta una pieza musical. Por lo tanto, esto determinara si la cancion sera energetica o, mas bien, calma.
+
+Ejemplos
+
+
+// Genero //  // BPM //
+
+RnB:-----------------> 75  BPM +/- 15
+
+Rap:-----------------> 90  BPM +/- 10
+
+HipHop:-------------> 100 BPM +/- 20
+
+Reggae:-------------> 100 BPM +/- 20
+
+Cumbia:-------------> 90  BPM +/- 20
+
+Reggaeton:---------> 100 BPM +/- 20
+
+Pop/rock/Dance:----> 120 BPM +/- 20
+
+Trance:---------------> 140 BPM +/- 10
+
+Heavy Metal/Punk:---> 140 BPM +/-50
+  
+## Canciones
+
+La cantidad total de canciones presentes es 226
+```{r}
+unique(spotify$cancion_nombre)
+```
+
+## Artistas
+
+La cantidad total de artistas es 124
+```{r}
+unique(spotify$cancion_artista)
+```
+
+## Paises
+
+La cantidad total de paises es 18
+```{r}
+unique(spotify$pais_nombre)
+```
+
+#### Cancion N° 1 de cada pais
+
+```{r}
+spotify %>%
+  select(pais_nombre, cancion_nombre, cancion_popularidad) %>% # columnas que elijo
+  group_by(pais_nombre) %>% # agrupados por país
+  top_n(1)
+```
+
+## Valores perdidos 
+
+#### Analiticamente
+Nuevamente se puede comprobar que no existen valores perdidos para cada una de las variables anteriormente analizadas.
+```{r}
+profile_missing(spotify)
+```
+
+#### Graficamente
+
+Aqui se representan lo mismo que en punto anterior pero de forma mas agradable.
+```{r}
+plot_missing(spotify)
+```
+
+## Correlaciones entre variables numericas
+
+  Una cancion es popular cuando es bailable, positiva y tiene una duracion promedio de 3 minutos. Por el contrario, las canciones populares no tienen una presencia de instrumentos mayor que de voz humana. Tampoco son aquellas que han sido grabadas en vivo.
+
+  Por otro lado, la fuerza de una cancion (volumen en dB) esta grandemente relacionada con la energia (canciones rapidas y ruidosas) de la misma.
+
+  Las canciones positivas dependen en gran medida en la fuerza y energia. Por lo tanto, son ruidosas y rapidas.
+
+  Por ultimo, la acustica de una cancion (guitarra, violin, flauta, etc) esta inversamente relacionada con la energia (canciones rapidas y ruidosas), ya que apunta a canciones lentas y relajantes.
+
+```{r}
+spotifyNumerics <- dplyr::select_if(spotify, is.numeric)
+spotifyNumerics <- subset(spotifyNumerics, select = -c(cancion_numero, X1))
+plot_correlation(spotifyNumerics)
+```
+
+### Correlacion entre la popularidad de una cancion con su bailabilidad, positividad, duracion, instrumentos y show en vivo
+
+```{r}
+ggplot(data = spotifyNumerics) + geom_bin2d(mapping = aes(x = feature_bailabilidad, y = cancion_popularidad))
+ggplot(data = spotifyNumerics) + geom_bin2d(mapping = aes(x = feature_positividad, y = cancion_popularidad))
+ggplot(data = spotifyNumerics) + geom_bin2d(mapping = aes(x = feature_duracion_ms, y = cancion_popularidad))
+ggplot(data = spotifyNumerics) + geom_bin2d(mapping = aes(x = feature_instrumental, y = cancion_popularidad))
+ggplot(data = spotifyNumerics) + geom_bin2d(mapping = aes(x = feature_en_vivo, y = cancion_popularidad))
+```
+
+### Correlacion entre la fuerza y energia
+
+```{r}
+ggplot(data = spotifyNumerics) + geom_bin2d(mapping = aes(x = feature_energia, y = feature_fuerza))
+```
+
+### Correlacion entre la positividad de una cancion con su fuerza y energia
+
+```{r}
+ggplot(data = spotifyNumerics) + geom_bin2d(mapping = aes(x = feature_fuerza, y = feature_positividad))
+ggplot(data = spotifyNumerics) + geom_bin2d(mapping = aes(x = feature_energia, y = feature_positividad))
+```
+
+### Correlacion entre la acustica y energia
+
+```{r}
+ggplot(data = spotifyNumerics) + geom_bin2d(mapping = aes(x = feature_acustico, y = feature_energia))
+```
+
+## Distribución de los valores de las variables
+
+### Variables continuas
+```{r}
+summary(spotifyNumerics)
+```
+
+### Variables categoricas
+
+```{r}
+spotifyNoNumerics <- dplyr::select_if(spotify, Negate(is.numeric))
+summary(spotifyNoNumerics)
+```
+
+## Diagrama de Caja
+
+```{r}
+plot_boxplot(spotifyNumerics,by="cancion_popularidad")
+```
+
+## Histograma
+
+```{r}
+plot_histogram(spotifyNumerics,ggtheme=theme_classic())
+```
+
+## Histograma de densidad
+
+```{r}
+plot_density(spotifyNumerics)
+```
