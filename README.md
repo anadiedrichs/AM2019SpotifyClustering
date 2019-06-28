@@ -1,6 +1,7 @@
 # am2019-spotify
 
 Consignas para el trabajo final de la cátedra Aprendizaje automático UTN Mendoza
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 # 1- Git 
   
@@ -26,11 +27,11 @@ Para obtener los datos deberás seguir estos 3 sencillos pasos:
     -   Copia tu `client ID` y tu `client Secret`.
     -   Haz clic en "Edit settings" y cambia Redirect URLs a <http://localhost:1410/> .
 
-- En el código de `0-get-data.R`, cambia en la línea donde se definen la variable `keys` los valores de `app_id`, `client_id` y `client_secret` por tus datos (línea 17. contando los saltos de línea).
+- En el código de `0-get-data-2.R`, cambia en la línea donde se definen la variable `keys` los valores de `app_id`, `client_id` y `client_secret` por tus datos (línea 17. contando los saltos de línea).
 
 - Instala los paquetes `tidyverse`, `Rspotify` y `httpuv` si no los tienes.
 
-- Corre el código `0-get-data.R`. Dependiendo de tu conexión, tardará en ejecutarse unos 4 minutos.
+- Corre el código `0-get-data-2.R`. Dependiendo de tu conexión, tardará en ejecutarse unos 4 minutos.
 
 # 3- Análisis descriptivo exploratorio
 
@@ -40,7 +41,7 @@ Para obtener los datos deberás seguir estos 3 sencillos pasos:
 
 * Puede encontrar ejemplos de como realizarlo [en este capítulo de r4ds](https://r4ds.had.co.nz/exploratory-data-analysis.html).
 
-* Debe realizar al menos tres gráficos (por ejemplo usando ggplot2).
+* Debe realizar al menos tres gráficos distintos (por ejemplo usando ggplot2).
 
 ¿Qué se espera de este punto?
 
@@ -91,6 +92,7 @@ Mediante pull request a este repo.
 | [:link:](https://adv-r.hadley.nz/) | Libro: Advanced R |
 | [:link:](https://r-graphics.org/) | Libro: R Graphics Cookbook, 2nd edition |
 | [:link:](https://bookdown.org/csgillespie/efficientR/) | Libro: Efficient R programming |
+
 
 
 
