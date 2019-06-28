@@ -1,0 +1,102 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(e1071)
+```
+
+Preprocesamiento de los datos:
+```{r}
+datos<- as.data.frame(read.csv("dataset_spotify.csv"))
+
+datos$energia <- as.numeric(datos$energia)
+datos$tiempo_compas <- as.numeric(datos$tiempo_compas)
+datos$bailabilidad <- as.numeric(datos$bailabilidad)
+datos$volumen <- as.numeric(datos$volumen)
+datos$hablado <- as.numeric(datos$hablado)
+datos$acustico <- as.numeric(datos$acustico)
+datos$positividad <- as.numeric(datos$positividad)
+datos$tempo <- as.numeric(datos$tempo)
+datos$duracion <- as.numeric(datos$duracion)
+
+
+
+
+datos_dup <- datos[!duplicated(datos$cancion),]
+
+datos_arg <- datos[which(datos[,7]== "El Top 50 de Argentina"),]
+datos_arg[,2]<- substring(datos_arg[,2],1,10)
+
+#score <- matrix(ncol = 23)
+#score[,23]<- NA
+#for(i in 1:902){
+#  if (datos[i,8] %in% score[,8] ){
+#    rbind(score, c(datos[i,],(100/ as.numeric(datos[i,8]) )))
+#  }
+#  else {
+#    score[which(score[,2]== datos[i,2]),23]<- score[which(score[,2]== datos[i,2]),23] + (100/as.numeric(datos[i,8]) )
+#  }
+#  
+#}
+```
+```{r}
+
+```
+Energia de las canciones populares en Argentina:
+```{r}
+ggplot(data = as.data.frame(datos_arg), mapping = aes(x = cancion, y= energia)) +
+  geom_col() +geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle= 90, hjust=1))
+```
+Popularidad de los artistas en latinoamerica:
+```{r}
+ggplot(data = as.data.frame(datos)) +
+  geom_bar(mapping = aes(x = artista)) +theme(axis.text.x = element_text(angle= 90, hjust=1, size = 5) )
+```
+Popularidad de los artistas en Argentina:
+```{r}
+ggplot(data = as.data.frame(datos_arg)) +
+  geom_bar(mapping = aes(x = artista)) +theme(axis.text.x = element_text(angle= 90, hjust=1))
+```
+Podemos observar que si bien es Paulo Londra el artista mas popular en Argentina, resulta ser Ariana Grande la mas reconocida si consideramos todos los paises de habla hispana.
+
+Energia en todas las canciones:
+```{r}
+ggplot(data = as.data.frame(datos_dup), mapping = aes(x = energia )) +
+  geom_histogram(binwidth = .02)
+```
+
+Distribucion de tiempos de compas:
+```{r}
+ggplot(data = as.data.frame(datos_dup)) +
+  geom_histogram(mapping = aes(x = tiempo_compas ), binwidth = .5)
+```
+
+
+```{r}
+clustering <- datos_dup
+
+clustering$energia <- scale(clustering$energia)
+clustering$tiempo_compas <- scale(clustering$tiempo_compas)
+clustering$bailabilidad <- scale(clustering$bailabilidad)
+clustering$volumen <- scale(clustering$volumen)
+clustering$hablado <- scale(clustering$hablado)
+clustering$acustico <- scale(clustering$acustico)
+clustering$positividad <- scale(clustering$positividad)
+clustering$tempo <- scale(clustering$tempo)
+
+clustering <- clustering %>% select(energia, tiempo_compas, bailabilidad, volumen, hablado, acustico, positividad, tempo)
+
+km <- kmeans(x=clustering, centers = 10 )
+
+datos_dup$kmeans <- km$cluster
+
+cm <- cmeans(x = clustering, centers = 10)
+
+datos_dup$cmeans <- cm$cluster
+```
+
