@@ -1,0 +1,173 @@
+---
+title: "Analisis Descriptivo Exploratorio"
+author: "Angel Santiago Perez 40023-40448"
+date: "12 de junio de 2019"
+output:
+  html_document:
+    collapsed: no
+    smooth_scroll: no
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Punto 3
+Importo bibliotecas y cargo el dataset descargado.Dicho DS fue descargado de la API de Spotify Developer seleccionando ciertos atributos (features) con la particularidad de ser de los top 50 del momentos, en los paises de habla hispana.
+
+```{r message=FALSE, warning=FALSE}
+library("GGally")
+library(ggplot2)
+library(tidyverse)
+library(gapminder)
+library(DataExplorer)
+
+dsspotify<-read.csv("./dataset_spotify.csv")
+```
+
+Empezando a ver cierta estructura del Dataset:
+
+###Resumen:
+
+```{r}
+resumen<-summary(dsspotify)
+
+numerovariable<-ncol(dsspotify)
+numeroobjetorig<-nrow(dsspotify)
+variables<-colnames(dsspotify)
+```
+
+```{r echo=FALSE}
+resumen
+```
+El DS tiene `r numerovariable` variables (o columnas) y `r numeroobjetorig` ejemplos (o filas). Las variables son: (`r variables`).
+
+###Estructura
+
+La estructura de las variables es: 
+
+```{r warning=FALSE}
+estructu<-str(dsspotify); 
+```
+
+##Analizando las variables
+1) Diagrama de caja de los valores de, los grupo por pais de, variables numericas.
+2) Diagrama de caja de la distribucion de los años registrados de los albums.
+3) Diagrama de correlación entre todas la variables numericas del DS.
+
+```{r warning=FALSE}
+cajasvariables<-plot_boxplot(
+        data=dsspotify[,c("volumen","nota_musical","en_vivo","tempo","tiempo_compas", "top_pais")], 
+        by = "top_pais")
+cajafechas<-boxplot(as.Date(dsspotify$fecha))
+correlavariables<-plot_correlation(dsspotify, maxcat = 0)
+```
+
+##Preprocesamiento
+En esta seccion hago un preprocesamiento de los datos, ya que se nota que contiene datos "impuros" (como que aparecen en algunos paises puestos mayores a 50), y ademas proceso las variables que me interesan y tienen mayor correlación para mi futuro analisis.
+
+```{r}
+prepros1<-dsspotify %>% filter(puesto<=50)
+numeroobje<-nrow(prepros1)
+columnasprepro2<-c(2,4,7,8,3,9,10,14,15,18,20,12)
+prepros2<-prepros1 %>% select(columnasprepro2)
+```
+
+Al final de mi preprocesamiento quedan `r numeroobje` filas y `r length(columnasprepro2)` columnas.
+
+#Variables
+Las columnas son: (`r colnames(prepros2)`)
+ 
+*cancion: indica el nombre de la canción  que aparece en el album.*
+ 
+*artista: indica el artista principal del cual produjo el album.*
+ 
+*puesto: indica del 1 al 50 que puesto esta segun el ranking de cada pais.*
+ 
+*top_pais: indica de que ranking es el puesto y la canción.*
+ 
+*popularidad: indica que tan popular es la cancion en el pais del 1 al 100, es un porcentaje.*
+ 
+*bailabilidad: indica que tan adecuada es una canción para bailar segun el ritmo del 0 al 1.*
+ 
+*energia: indica que tan intenso o activo es una canción, mide el ruido y la rapidez del 0 al 1.*
+ 
+*hablado: indica la presencia de voz en la canción, si es musica-canción-discurso, del 0 al 1.*
+ 
+*acustico: indica que tan acustico es la canción, si contiene o no musica, del 0 al 1.*
+ 
+*positividad: indica la positividad-alegria segun la valencia de la canción del 0 al 1.*
+ 
+*duracion: indica la duración de la canción al reproducirse en ms.*
+ 
+*volumen: indica el volumen promedio de la pista se mide en dB de -60 a 0.*
+
+```{r}
+head(prepros2)
+```
+
+
+```{r}
+toppaises<-prepros2 %>% select(top_pais) %>% distinct(top_pais)
+paises<-substring(as.character(toppaises[1:18,]), 14)
+canciones<-prepros2 %>% select(cancion) %>% distinct(cancion)
+artistas<-prepros2 %>% select(artista) %>% distinct(artista)
+```
+
+De este DS de Spotify de top 50 de paises hispanohablantes se evaluan: `r length(paises)` paises, que son: (`r paises`). `r length(canciones[,])` canciones distintas de `r length(artistas[,])` artistas principales.
+
+##EDA profundo
+
+###1)
+
+Primero noto que hay dos etiquetas muy parecidas, Top y Popularidad. Al ver la documentación de la API noto que la popularidad de cada canción esta directamente relacionado con la cantidad de visitas-reproducciones que ha tenido dicha canción, y que ademas es calculado por algoritmo de Spotify para realizar sugerencias o recomendaciónes, a diferencia del Top, que es lo mas escuchado y puntuado (en likes) en cada pais, en este caso solo hasta los tops 50.
+
+```{r}
+grafirealgorit <- ggpairs(prepros2, mapping = aes(color = top_pais), columns = 
+                  colnames(prepros2[,4:5]),cardinality_threshold = 20); grafirealgorit #Top-Popul
+```
+En este grafico se puede ver que la gran mayoria de las canciones que estan en el top son clasificadas como populares, mientras que una pequeña cantidad que son tops no son populares o recomendadas.
+
+###2)
+
+Nuevamente veo la correlación entre las variables numericas preprocesadas, lo cual simplifica la vista al intentar evaluar relaciones entre las etiquetas que fueron calculadas por el algoritmo de Spotify.
+
+```{r warning=FALSE}
+correlacvariapreprose<-plot_correlation(prepros2[,-5], maxcat = 0)
+```
+
+###3)
+
+En este apartado se ve un grafico de pares, con cada pares de variables, el primer grafico muestra que el "top_pais" no añade valor, por lo que se prescinde de el momentanemente. Aunque se puede notar la distribución en cajas de las variables por paises.
+
+```{r message=FALSE, warning=FALSE}
+grafivar <- ggpairs(prepros2, mapping = aes(color = top_pais), 
+                    columns = colnames(prepros2)[-c(1:2,5)],cardinality_threshold = 20); grafivar
+grafiusar <- ggpairs(prepros2, mapping = aes(color = top_pais), 
+                    columns = colnames(prepros2)[c(4,6:12)],cardinality_threshold = 20); grafiusar
+```
+
+###4)
+
+Por ultimo se ve un histograma de artistas y canciones. Aqui se ve que tan frecuentes son algunos en total de todos los tops. Lo que significa que no todos los/las artistas/canciones son excluyentes de un puesto/pais.
+
+```{r}
+grafiartishisto <- ggpairs(prepros2, mapping = aes(color = top_pais), 
+                     columns = colnames(prepros2)[c(2)],cardinality_threshold = 300); grafiartishisto
+graficanchisto <- ggpairs(prepros2, mapping = aes(color = top_pais), 
+                      columns = colnames(prepros2)[c(1)],cardinality_threshold = 300); graficanchisto
+```
+
+Aqui se puede notar, mejor, que mayormente las canciones se repiten en varios puestos del top, y que la no hay gran distinción entre canciones/artistas por variación de paises.
+
+```{r}
+grafiartista<-plot_scatterplot(prepros2[1:5], by = "artista")
+if(0==1)
+{
+  graficancion<-plot_scatterplot(prepros2[1:5], by = "cancion")
+  write.csv(prepros2,"dspreprocesado.csv")
+}
+```
