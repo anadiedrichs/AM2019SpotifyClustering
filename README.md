@@ -1,7 +1,6 @@
 # am2019-spotify
 
 Consignas para el trabajo final de la cátedra Aprendizaje automático UTN Mendoza
-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 # 1- Git 
   
